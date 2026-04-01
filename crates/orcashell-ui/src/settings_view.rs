@@ -635,38 +635,36 @@ impl Render for SettingsView {
                 ),
         );
 
-        let system_light_row = Self::setting_row()
-            .child(Self::label("Light Mode"))
-            .child(
-                div()
-                    .flex()
-                    .items_center()
-                    .gap(px(12.0))
-                    .child(
-                        Self::radio_option(
-                            "system-light-light",
-                            "Light",
-                            settings.system_light_theme == ThemeId::Light,
-                        )
-                        .on_click(cx.listener(|_this, _, _, cx| {
-                            let mut s = cx.global::<AppSettings>().clone();
-                            s.system_light_theme = ThemeId::Light;
-                            cx.set_global(s);
-                        })),
+        let system_light_row = Self::setting_row().child(Self::label("Light Mode")).child(
+            div()
+                .flex()
+                .items_center()
+                .gap(px(12.0))
+                .child(
+                    Self::radio_option(
+                        "system-light-light",
+                        "Light",
+                        settings.system_light_theme == ThemeId::Light,
                     )
-                    .child(
-                        Self::radio_option(
-                            "system-light-sepia",
-                            "Sepia",
-                            settings.system_light_theme == ThemeId::Sepia,
-                        )
-                        .on_click(cx.listener(|_this, _, _, cx| {
-                            let mut s = cx.global::<AppSettings>().clone();
-                            s.system_light_theme = ThemeId::Sepia;
-                            cx.set_global(s);
-                        })),
-                    ),
-            );
+                    .on_click(cx.listener(|_this, _, _, cx| {
+                        let mut s = cx.global::<AppSettings>().clone();
+                        s.system_light_theme = ThemeId::Light;
+                        cx.set_global(s);
+                    })),
+                )
+                .child(
+                    Self::radio_option(
+                        "system-light-sepia",
+                        "Sepia",
+                        settings.system_light_theme == ThemeId::Sepia,
+                    )
+                    .on_click(cx.listener(|_this, _, _, cx| {
+                        let mut s = cx.global::<AppSettings>().clone();
+                        s.system_light_theme = ThemeId::Sepia;
+                        cx.set_global(s);
+                    })),
+                ),
+        );
 
         let system_dark_row = Self::setting_row().child(Self::label("Dark Mode")).child(
             div()

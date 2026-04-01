@@ -9,8 +9,8 @@ use git2::{
     ObjectType, Oid, Patch, Reference, Repository, WorktreeAddOptions, WorktreePruneOptions,
 };
 
-pub use orcashell_syntax::HighlightedSpan;
 use orcashell_store::ThemeId;
+pub use orcashell_syntax::HighlightedSpan;
 
 pub const ORCASHELL_EXCLUDE_ENTRY: &str = "/.orcashell/";
 pub const MAX_RENDERED_DIFF_LINES: usize = 10_000;

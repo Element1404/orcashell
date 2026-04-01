@@ -424,7 +424,12 @@ impl Sidebar {
 
                 let (icon_text, icon_color, icon_opacity, icon_weight) = if is_notifying {
                     let _ = notification_tier;
-                    ("!!", palette.SEAFOAM, self.pulse_opacity(), FontWeight::BOLD)
+                    (
+                        "!!",
+                        palette.SEAFOAM,
+                        self.pulse_opacity(),
+                        FontWeight::BOLD,
+                    )
                 } else if is_pulsing {
                     (
                         ">_",

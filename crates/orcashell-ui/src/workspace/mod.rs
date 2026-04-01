@@ -1641,7 +1641,8 @@ impl WorkspaceState {
         palette.search_input_text = rgb(theme.BONE).into();
         palette.search_input_placeholder = rgba(theme::with_alpha(theme.SLATE, 0x80)).into();
         palette.search_input_cursor = rgb(theme.ORCA_BLUE).into();
-        palette.search_input_selection = rgba(theme::with_alpha(theme.TERMINAL_SELECTION, 0x40)).into();
+        palette.search_input_selection =
+            rgba(theme::with_alpha(theme.TERMINAL_SELECTION, 0x40)).into();
         let hover_base = if theme.TERMINAL_BACKGROUND == theme.DEEP {
             theme.PATCH
         } else {

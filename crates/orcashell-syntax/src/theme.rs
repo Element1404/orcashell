@@ -29,7 +29,9 @@ struct SyntaxPalette {
 
 pub fn orca_syntax_theme(theme_id: ThemeId) -> &'static Theme {
     match theme_id {
-        ThemeId::Dark => DARK_THEME.get_or_init(|| build_theme(dark_palette(), "Orca Brutalism Dark")),
+        ThemeId::Dark => {
+            DARK_THEME.get_or_init(|| build_theme(dark_palette(), "Orca Brutalism Dark"))
+        }
         ThemeId::Black => {
             BLACK_THEME.get_or_init(|| build_theme(black_palette(), "Orca Brutalism Black"))
         }
@@ -182,7 +184,12 @@ mod tests {
 
     #[test]
     fn all_theme_variants_build() {
-        for theme_id in [ThemeId::Dark, ThemeId::Black, ThemeId::Light, ThemeId::Sepia] {
+        for theme_id in [
+            ThemeId::Dark,
+            ThemeId::Black,
+            ThemeId::Light,
+            ThemeId::Sepia,
+        ] {
             let theme = orca_syntax_theme(theme_id);
             assert!(theme.settings.foreground.is_some());
             assert!(theme.settings.background.is_some());
