@@ -2,7 +2,7 @@ use gpui::prelude::FluentBuilder as _;
 use gpui::*;
 
 use crate::settings::{AppSettings, ThemeId, ThemeMode};
-use crate::theme;
+use crate::theme::{self, OrcaTheme};
 use crate::workspace::WorkspaceState;
 use orcashell_store::CursorStyle;
 
@@ -113,8 +113,7 @@ impl SettingsView {
 
     // ── Layout helpers ──────────────────────────────────────────────────
 
-    fn section_header(title: &str) -> Div {
-        let palette = theme::current();
+    fn section_header(palette: &OrcaTheme, title: &str) -> Div {
         div()
             .w_full()
             .pb(px(8.0))
@@ -138,8 +137,7 @@ impl SettingsView {
             .gap(px(16.0))
     }
 
-    fn label(text: &str) -> Div {
-        let palette = theme::current();
+    fn label(palette: &OrcaTheme, text: &str) -> Div {
         div()
             .w(px(140.0))
             .flex_shrink_0()
@@ -148,8 +146,7 @@ impl SettingsView {
             .child(text.to_string())
     }
 
-    fn stepper_button(id: impl Into<SharedString>, label: &str) -> Stateful<Div> {
-        let palette = theme::current();
+    fn stepper_button(palette: &OrcaTheme, id: impl Into<SharedString>, label: &str) -> Stateful<Div> {
         div()
             .id(ElementId::Name(id.into()))
             .w(px(28.0))
@@ -166,8 +163,7 @@ impl SettingsView {
             .child(label.to_string())
     }
 
-    fn value_display(value: String) -> Div {
-        let palette = theme::current();
+    fn value_display(palette: &OrcaTheme, value: String) -> Div {
         div()
             .w(px(80.0))
             .h(px(28.0))
@@ -183,8 +179,7 @@ impl SettingsView {
             .child(value)
     }
 
-    fn radio_option(id: impl Into<SharedString>, text: &str, selected: bool) -> Stateful<Div> {
-        let palette = theme::current();
+    fn radio_option(palette: &OrcaTheme, id: impl Into<SharedString>, text: &str, selected: bool) -> Stateful<Div> {
         div()
             .id(ElementId::Name(id.into()))
             .flex()
@@ -217,13 +212,13 @@ impl SettingsView {
     }
 
     fn text_field_display(
+        palette: &OrcaTheme,
         id: impl Into<SharedString>,
         current_value: &str,
         placeholder: &str,
         is_editing: bool,
         edit_buffer: &str,
     ) -> Stateful<Div> {
-        let palette = theme::current();
         let display = if is_editing {
             if edit_buffer.is_empty() {
                 "\u{258F}".to_string()
@@ -284,13 +279,13 @@ impl Render for SettingsView {
 
         // ── Font Size ──
         let font_size = settings.font_size;
-        let font_size_row = Self::setting_row().child(Self::label("Font Size")).child(
+        let font_size_row = Self::setting_row().child(Self::label(&palette, "Font Size")).child(
             div()
                 .flex()
                 .items_center()
                 .gap(px(4.0))
                 .child(
-                    Self::stepper_button("font-size-dec", "\u{2212}").on_click(cx.listener(
+                    Self::stepper_button(&palette, "font-size-dec", "\u{2212}").on_click(cx.listener(
                         move |_this, _, _, cx| {
                             let mut s = cx.global::<AppSettings>().clone();
                             s.font_size = (s.font_size - 1.0).max(8.0);
@@ -298,9 +293,9 @@ impl Render for SettingsView {
                         },
                     )),
                 )
-                .child(Self::value_display(format!("{:.1}", font_size)))
+                .child(Self::value_display(&palette, format!("{:.1}", font_size)))
                 .child(
-                    Self::stepper_button("font-size-inc", "+").on_click(cx.listener(
+                    Self::stepper_button(&palette, "font-size-inc", "+").on_click(cx.listener(
                         move |_this, _, _, cx| {
                             let mut s = cx.global::<AppSettings>().clone();
                             s.font_size = (s.font_size + 1.0).min(32.0);
@@ -317,8 +312,8 @@ impl Render for SettingsView {
         } else {
             settings.font_family.clone()
         };
-        let font_family_row = Self::setting_row().child(Self::label("Font Family")).child(
-            Self::text_field_display(
+        let font_family_row = Self::setting_row().child(Self::label(&palette, "Font Family")).child(
+            Self::text_field_display(&palette, 
                 "font-family-input",
                 &settings.font_family,
                 "JetBrains Mono",
@@ -334,21 +329,21 @@ impl Render for SettingsView {
         // ── Scrollback ──
         let scrollback = settings.scrollback_lines;
         let scrollback_row =
-            Self::setting_row().child(Self::label("Scrollback")).child(
+            Self::setting_row().child(Self::label(&palette, "Scrollback")).child(
                 div()
                     .flex()
                     .items_center()
                     .gap(px(4.0))
-                    .child(Self::stepper_button("scrollback-dec", "\u{2212}").on_click(
+                    .child(Self::stepper_button(&palette, "scrollback-dec", "\u{2212}").on_click(
                         cx.listener(move |_this, _, _, cx| {
                             let mut s = cx.global::<AppSettings>().clone();
                             s.scrollback_lines = s.scrollback_lines.saturating_sub(1000).max(100);
                             cx.set_global(s);
                         }),
                     ))
-                    .child(Self::value_display(format!("{}", scrollback)))
+                    .child(Self::value_display(&palette, format!("{}", scrollback)))
                     .child(
-                        Self::stepper_button("scrollback-inc", "+").on_click(cx.listener(
+                        Self::stepper_button(&palette, "scrollback-inc", "+").on_click(cx.listener(
                             move |_this, _, _, cx| {
                                 let mut s = cx.global::<AppSettings>().clone();
                                 s.scrollback_lines = (s.scrollback_lines + 1000).min(100_000);
@@ -360,13 +355,13 @@ impl Render for SettingsView {
 
         // ── Cursor Style ──
         let cursor_style = settings.cursor_style;
-        let cursor_style_row = Self::setting_row().child(Self::label("Style")).child(
+        let cursor_style_row = Self::setting_row().child(Self::label(&palette, "Style")).child(
             div()
                 .flex()
                 .items_center()
                 .gap(px(12.0))
                 .child(
-                    Self::radio_option("cursor-block", "Block", cursor_style == CursorStyle::Block)
+                    Self::radio_option(&palette, "cursor-block", "Block", cursor_style == CursorStyle::Block)
                         .on_click(cx.listener(|_this, _, _, cx| {
                             let mut s = cx.global::<AppSettings>().clone();
                             s.cursor_style = CursorStyle::Block;
@@ -374,7 +369,7 @@ impl Render for SettingsView {
                         })),
                 )
                 .child(
-                    Self::radio_option("cursor-bar", "Bar", cursor_style == CursorStyle::Bar)
+                    Self::radio_option(&palette, "cursor-bar", "Bar", cursor_style == CursorStyle::Bar)
                         .on_click(cx.listener(|_this, _, _, cx| {
                             let mut s = cx.global::<AppSettings>().clone();
                             s.cursor_style = CursorStyle::Bar;
@@ -383,6 +378,7 @@ impl Render for SettingsView {
                 )
                 .child(
                     Self::radio_option(
+                        &palette,
                         "cursor-underline",
                         "Underline",
                         cursor_style == CursorStyle::Underline,
@@ -397,7 +393,7 @@ impl Render for SettingsView {
 
         // ── Cursor Blink ──
         let cursor_blink = settings.cursor_blink;
-        let cursor_blink_row = Self::setting_row().child(Self::label("Blink")).child(
+        let cursor_blink_row = Self::setting_row().child(Self::label(&palette, "Blink")).child(
             div()
                 .id("cursor-blink-toggle")
                 .w(px(18.0))
@@ -432,7 +428,7 @@ impl Render for SettingsView {
         // ── Activity Pulse ──
         let activity_pulse = settings.activity_pulse;
         let activity_pulse_row = Self::setting_row()
-            .child(Self::label("Activity Pulse"))
+            .child(Self::label(&palette, "Activity Pulse"))
             .child(
                 div()
                     .id("activity-pulse-toggle")
@@ -468,7 +464,7 @@ impl Render for SettingsView {
         // ── Agent Notifications ──
         let agent_notifications = settings.agent_notifications;
         let agent_notifications_row = Self::setting_row()
-            .child(Self::label("Agent Notifications"))
+            .child(Self::label(&palette, "Agent Notifications"))
             .child(
                 div()
                     .id("agent-notifications-toggle")
@@ -510,9 +506,9 @@ impl Render for SettingsView {
             patterns_value.clone()
         };
         let urgent_patterns_row = Self::setting_row()
-            .child(Self::label("Urgent Patterns"))
+            .child(Self::label(&palette, "Urgent Patterns"))
             .child(
-                Self::text_field_display(
+                Self::text_field_display(&palette, 
                     "urgent-patterns-input",
                     &patterns_value,
                     "approv, permission, edit",
@@ -537,9 +533,9 @@ impl Render for SettingsView {
             shell_value.clone()
         };
         let shell_row = Self::setting_row()
-            .child(Self::label("Default Shell"))
+            .child(Self::label(&palette, "Default Shell"))
             .child(
-                Self::text_field_display(
+                Self::text_field_display(&palette, 
                     "shell-input",
                     &shell_value,
                     if cfg!(windows) {
@@ -560,13 +556,14 @@ impl Render for SettingsView {
                 })),
             );
 
-        let theme_row = Self::setting_row().child(Self::label("Theme")).child(
+        let theme_row = Self::setting_row().child(Self::label(&palette, "Theme")).child(
             div()
                 .flex()
                 .items_center()
                 .gap(px(12.0))
                 .child(
                     Self::radio_option(
+                        &palette,
                         "theme-system",
                         "System",
                         settings.theme_mode == ThemeMode::System,
@@ -579,6 +576,7 @@ impl Render for SettingsView {
                 )
                 .child(
                     Self::radio_option(
+                        &palette,
                         "theme-dark",
                         "Dark",
                         settings.theme_mode == ThemeMode::Manual
@@ -593,6 +591,7 @@ impl Render for SettingsView {
                 )
                 .child(
                     Self::radio_option(
+                        &palette,
                         "theme-black",
                         "Black",
                         settings.theme_mode == ThemeMode::Manual
@@ -607,6 +606,7 @@ impl Render for SettingsView {
                 )
                 .child(
                     Self::radio_option(
+                        &palette,
                         "theme-light",
                         "Light",
                         settings.theme_mode == ThemeMode::Manual
@@ -621,6 +621,7 @@ impl Render for SettingsView {
                 )
                 .child(
                     Self::radio_option(
+                        &palette,
                         "theme-sepia",
                         "Sepia",
                         settings.theme_mode == ThemeMode::Manual
@@ -635,13 +636,14 @@ impl Render for SettingsView {
                 ),
         );
 
-        let system_light_row = Self::setting_row().child(Self::label("Light Mode")).child(
+        let system_light_row = Self::setting_row().child(Self::label(&palette, "Light Mode")).child(
             div()
                 .flex()
                 .items_center()
                 .gap(px(12.0))
                 .child(
                     Self::radio_option(
+                        &palette,
                         "system-light-light",
                         "Light",
                         settings.system_light_theme == ThemeId::Light,
@@ -654,6 +656,7 @@ impl Render for SettingsView {
                 )
                 .child(
                     Self::radio_option(
+                        &palette,
                         "system-light-sepia",
                         "Sepia",
                         settings.system_light_theme == ThemeId::Sepia,
@@ -666,13 +669,14 @@ impl Render for SettingsView {
                 ),
         );
 
-        let system_dark_row = Self::setting_row().child(Self::label("Dark Mode")).child(
+        let system_dark_row = Self::setting_row().child(Self::label(&palette, "Dark Mode")).child(
             div()
                 .flex()
                 .items_center()
                 .gap(px(12.0))
                 .child(
                     Self::radio_option(
+                        &palette,
                         "system-dark-dark",
                         "Dark",
                         settings.system_dark_theme == ThemeId::Dark,
@@ -685,6 +689,7 @@ impl Render for SettingsView {
                 )
                 .child(
                     Self::radio_option(
+                        &palette,
                         "system-dark-black",
                         "Black",
                         settings.system_dark_theme == ThemeId::Black,
@@ -715,28 +720,28 @@ impl Render for SettingsView {
                         .child("Settings"),
                 )
                 // Terminal
-                .child(Self::section_header("Terminal"))
+                .child(Self::section_header(&palette, "Terminal"))
                 .child(font_size_row)
                 .child(font_family_row)
                 .child(scrollback_row)
                 // Cursor
                 .child(div().h(px(12.0)))
-                .child(Self::section_header("Cursor"))
+                .child(Self::section_header(&palette, "Cursor"))
                 .child(cursor_style_row)
                 .child(cursor_blink_row)
                 // Attention
                 .child(div().h(px(12.0)))
-                .child(Self::section_header("Attention"))
+                .child(Self::section_header(&palette, "Attention"))
                 .child(activity_pulse_row)
                 .child(agent_notifications_row)
                 .child(urgent_patterns_row)
                 // Shell
                 .child(div().h(px(12.0)))
-                .child(Self::section_header("Shell"))
+                .child(Self::section_header(&palette, "Shell"))
                 .child(shell_row)
                 // Appearance
                 .child(div().h(px(12.0)))
-                .child(Self::section_header("Appearance"))
+                .child(Self::section_header(&palette, "Appearance"))
                 .child(theme_row)
                 .when(settings.theme_mode == ThemeMode::System, |this| {
                     this.child(system_light_row)

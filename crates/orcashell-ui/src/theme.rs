@@ -5,7 +5,6 @@
 //! `ResolvedTheme` global via [`active`].
 
 use gpui::{App, Global, WindowAppearance};
-use std::sync::{OnceLock, RwLock};
 
 use crate::settings::{AppSettings, ThemeId, ThemeMode};
 
@@ -204,19 +203,12 @@ pub struct SystemAppearance(pub WindowAppearance);
 
 impl Global for SystemAppearance {}
 
-static CURRENT_THEME: OnceLock<RwLock<OrcaTheme>> = OnceLock::new();
-
-fn current_theme_store() -> &'static RwLock<OrcaTheme> {
-    CURRENT_THEME.get_or_init(|| RwLock::new(OrcaTheme::default()))
-}
-
 pub fn register_theme(cx: &mut App) {
     let appearance = cx.window_appearance();
     cx.set_global(SystemAppearance(appearance));
 
     let settings = cx.global::<AppSettings>().clone();
     let resolved = resolve_theme(&settings, appearance);
-    *current_theme_store().write().expect("theme lock poisoned") = resolved.theme.clone();
     cx.set_global(resolved);
 }
 
@@ -233,20 +225,12 @@ pub fn sync_from_settings(cx: &mut App) -> bool {
         return false;
     }
 
-    *current_theme_store().write().expect("theme lock poisoned") = resolved.theme.clone();
     cx.set_global(resolved);
     true
 }
 
 pub fn active(cx: &App) -> OrcaTheme {
     cx.global::<ResolvedTheme>().theme.clone()
-}
-
-pub fn current() -> OrcaTheme {
-    current_theme_store()
-        .read()
-        .expect("theme lock poisoned")
-        .clone()
 }
 
 pub fn active_selection(cx: &App) -> ThemeSelection {

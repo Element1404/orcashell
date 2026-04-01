@@ -10,6 +10,8 @@ use std::cell::RefCell;
 use crate::app_view::ContextMenuRequest;
 use crate::context_menu::{platform_shortcut, ContextMenuItem};
 use crate::settings::AppSettings;
+#[cfg(target_os = "windows")]
+use crate::theme::OrcaTheme;
 use crate::theme;
 use crate::workspace::actions::ToggleSidebar;
 use crate::workspace::layout::{LayoutNode, SplitDirection};
@@ -245,8 +247,7 @@ fn apply_windows_drag(bar: Div, cx: &mut Context<WindowTabBar>) -> Div {
 /// Append minimize / maximize-or-restore / close buttons to a bar div.
 /// Each button is 46px wide x 32px tall (Windows standard caption button size).
 #[cfg(target_os = "windows")]
-fn append_window_controls(bar: Div, window: &mut Window) -> Div {
-    let palette = theme::current();
+fn append_window_controls(palette: &OrcaTheme, bar: Div, window: &mut Window) -> Div {
     let is_maximized = window.is_maximized();
 
     bar
@@ -426,7 +427,7 @@ impl Render for WindowTabBar {
             {
                 empty_bar = apply_windows_drag(empty_bar, cx);
                 empty_bar = empty_bar.child(div().flex_1()); // Spacer pushes controls right
-                empty_bar = append_window_controls(empty_bar, window);
+                empty_bar = append_window_controls(&palette, empty_bar, window);
             }
 
             return empty_bar;
@@ -939,7 +940,7 @@ impl Render for WindowTabBar {
         // Windows: append minimize / maximize-or-restore / close controls
         #[cfg(target_os = "windows")]
         {
-            bar = append_window_controls(bar, window);
+            bar = append_window_controls(&palette, bar, window);
         }
 
         bar

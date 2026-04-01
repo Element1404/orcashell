@@ -8,7 +8,7 @@ use gpui::*;
 use crate::app_view::ContextMenuRequest;
 use crate::context_menu::ContextMenuItem;
 use crate::settings::{AppSettings, ThemeId};
-use crate::theme;
+use crate::theme::{self, OrcaTheme};
 use crate::workspace::layout::LayoutNode;
 use crate::workspace::{RenameLocation, WorkspaceState};
 
@@ -54,8 +54,8 @@ struct SidebarDragView {
 }
 
 impl Render for SidebarDragView {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        let palette = theme::current();
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let palette = theme::active(cx);
         div()
             .px(px(10.0))
             .py(px(4.0))
@@ -802,12 +802,12 @@ impl Sidebar {
 
     fn render_scrollbar(
         &self,
+        palette: &OrcaTheme,
         thumb_y: f32,
         thumb_height: f32,
         is_dragging: bool,
         cx: &mut Context<Self>,
     ) -> Stateful<Div> {
-        let palette = theme::current();
         let thumb_color = if is_dragging {
             theme::with_alpha(palette.ORCA_BLUE, 0x40)
         } else {
@@ -1086,7 +1086,7 @@ impl Render for Sidebar {
                     .child({
                         let scrollbar = self.scrollbar_geometry().map(|(thumb_y, thumb_height)| {
                             let is_dragging = self.scrollbar_drag.is_some();
-                            self.render_scrollbar(thumb_y, thumb_height, is_dragging, cx)
+                            self.render_scrollbar(&palette, thumb_y, thumb_height, is_dragging, cx)
                         });
                         // Notify sidebar on scroll so the scrollbar thumb re-renders
                         let project_list = self.render_project_list(cx).on_scroll_wheel(
