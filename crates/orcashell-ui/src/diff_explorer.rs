@@ -14,7 +14,7 @@ use orcashell_terminal_view::{Copy, TextInputState};
 
 use crate::app_view::ContextMenuRequest;
 use crate::context_menu::ContextMenuItem;
-use crate::theme;
+use crate::theme::{self, OrcaTheme};
 use crate::workspace::{
     ActionBanner, ActionBannerKind, DiffTabState, ManagedWorktreeSummary, RemoveWorktreeConfirm,
     WorkspaceState,
@@ -1464,6 +1464,7 @@ impl DiffExplorerView {
         let line_count = lines.len();
         let selection = self.selection;
         let scroll_x = self.diff_scroll_x;
+        let line_palette = palette.clone();
 
         // Fixed file header bar above the line list.
         let mut file_header = div()
@@ -1505,7 +1506,15 @@ impl DiffExplorerView {
         // The virtualized line list.
         let diff_list = uniform_list("diff-lines", line_count, move |range, _window, _cx| {
             range
-                .map(|ix| render_diff_line_element(&lines[ix], ix, selection.as_ref(), scroll_x))
+                .map(|ix| {
+                    render_diff_line_element(
+                        &line_palette,
+                        &lines[ix],
+                        ix,
+                        selection.as_ref(),
+                        scroll_x,
+                    )
+                })
                 .collect()
         })
         .size_full()
@@ -2111,12 +2120,13 @@ impl Render for DiffExplorerView {
 /// This is a free function (not a method) so it can be captured by the
 /// `uniform_list` closure without borrowing `self`.
 fn render_diff_line_element(
+    palette: &OrcaTheme,
     line: &DiffLineView,
     line_index: usize,
     selection: Option<&DiffSelection>,
     scroll_x: f32,
 ) -> AnyElement {
-    let (background, text_color, gutter) = diff_line_colors(line.kind);
+    let (background, text_color, gutter) = diff_line_colors(palette, line.kind);
 
     let mut row = div()
         .w_full()
@@ -2154,11 +2164,12 @@ fn render_diff_line_element(
                     .whitespace_nowrap()
                     .when(scroll_x > 0.0, |d| d.ml(px(-scroll_x)))
                     .child(render_highlighted_text(
+                        palette,
                         &line.text,
                         line.highlights.as_deref(),
                         selection_range_for_line(selection, line_index, line),
                         line.inline_changes.as_deref(),
-                        inline_change_bg(line.kind),
+                        inline_change_bg(palette, line.kind),
                     )),
             ),
         );
@@ -2167,8 +2178,7 @@ fn render_diff_line_element(
 }
 
 /// Return (background, text_color, gutter_color) for a given diff-line kind.
-fn diff_line_colors(kind: DiffLineKind) -> (Option<u32>, u32, u32) {
-    let palette = theme::current();
+fn diff_line_colors(palette: &OrcaTheme, kind: DiffLineKind) -> (Option<u32>, u32, u32) {
     match kind {
         DiffLineKind::Addition => (
             Some(theme::with_alpha(palette.STATUS_GREEN, 0x1F)),
@@ -2200,8 +2210,7 @@ fn diff_line_colors(kind: DiffLineKind) -> (Option<u32>, u32, u32) {
 }
 
 /// Return the inline change background color for a given line kind, if applicable.
-fn inline_change_bg(kind: DiffLineKind) -> Option<Hsla> {
-    let palette = theme::current();
+fn inline_change_bg(palette: &OrcaTheme, kind: DiffLineKind) -> Option<Hsla> {
     match kind {
         DiffLineKind::Addition => Some(rgba(theme::with_alpha(palette.STATUS_GREEN, 0x2E)).into()),
         DiffLineKind::Deletion => Some(rgba(theme::with_alpha(palette.STATUS_CORAL, 0x2E)).into()),
@@ -2432,13 +2441,13 @@ fn in_any_range(pos: usize, ranges: &[Range<usize>]) -> bool {
 /// composite style (foreground from syntax + background from selection) and
 /// no two ranges overlap.
 fn render_highlighted_text(
+    palette: &OrcaTheme,
     text: &str,
     highlights: Option<&[HighlightedSpan]>,
     selection_range: Option<Range<usize>>,
     inline_changes: Option<&[Range<usize>]>,
     inline_bg: Option<Hsla>,
 ) -> AnyElement {
-    let palette = theme::current();
     let sel_bg: Hsla = rgba(theme::with_alpha(palette.ORCA_BLUE, 0x40)).into();
 
     // Map inline change ranges from raw text bytes to display text bytes.

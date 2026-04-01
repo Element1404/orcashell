@@ -132,17 +132,18 @@ impl OrcaAppView {
 
         // Observe settings changes and propagate to all terminal views + save settings.json
         cx.observe_global::<AppSettings>(|this, cx| {
-            theme::sync_from_settings(cx);
-            let settings = cx.global::<AppSettings>();
-            let palette = theme::active(cx);
-            let config = WorkspaceState::build_terminal_config(settings, &palette);
-            this.workspace.update(cx, |ws, cx| {
-                ws.refresh_diff_theme(cx);
-                for view in ws.terminal_views.values() {
-                    view.update(cx, |v, _cx| v.apply_config(config.clone()));
-                }
-                cx.notify();
-            });
+            let theme_changed = theme::sync_from_settings(cx);
+            if !theme_changed {
+                let settings = cx.global::<AppSettings>();
+                let palette = theme::active(cx);
+                let config = WorkspaceState::build_terminal_config(settings, &palette);
+                this.workspace.update(cx, |ws, cx| {
+                    for view in ws.terminal_views.values() {
+                        view.update(cx, |v, _cx| v.apply_config(config.clone()));
+                    }
+                    cx.notify();
+                });
+            }
             // Debounced save of settings.json
             this.settings_save_task = Some(cx.spawn(async move |_this, cx: &mut AsyncApp| {
                 Timer::after(std::time::Duration::from_millis(500)).await;

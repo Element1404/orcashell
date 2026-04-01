@@ -191,7 +191,7 @@ pub struct ThemeSelection {
     pub appearance: WindowAppearance,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ResolvedTheme {
     pub selection: ThemeSelection,
     pub theme: OrcaTheme,
@@ -225,12 +225,17 @@ pub fn update_window_appearance(appearance: WindowAppearance, cx: &mut App) {
     sync_from_settings(cx);
 }
 
-pub fn sync_from_settings(cx: &mut App) {
+pub fn sync_from_settings(cx: &mut App) -> bool {
     let settings = cx.global::<AppSettings>().clone();
     let appearance = cx.global::<SystemAppearance>().0;
     let resolved = resolve_theme(&settings, appearance);
+    if cx.global::<ResolvedTheme>() == &resolved {
+        return false;
+    }
+
     *current_theme_store().write().expect("theme lock poisoned") = resolved.theme.clone();
     cx.set_global(resolved);
+    true
 }
 
 pub fn active(cx: &App) -> OrcaTheme {
@@ -361,5 +366,18 @@ mod tests {
         settings.system_dark_theme = ThemeId::Black;
         let resolved = resolve_theme(&settings, WindowAppearance::Dark);
         assert_eq!(resolved.selection.resolved_id, ThemeId::Black);
+    }
+
+    #[test]
+    fn unrelated_settings_changes_do_not_change_resolved_theme() {
+        let settings = AppSettings(crate::settings::AppSettingsInner::default());
+        let original = resolve_theme(&settings, WindowAppearance::Dark);
+
+        let mut updated = settings.clone();
+        updated.font_size += 1.0;
+        updated.sidebar_visible = !updated.sidebar_visible;
+
+        let resolved = resolve_theme(&updated, WindowAppearance::Dark);
+        assert_eq!(original, resolved);
     }
 }
