@@ -1,8 +1,8 @@
 <p align="center">
 <br><img src="assets/OrcaShellLogoTrimmed.png" alt="OrcaShell" width="200" /><br><br>
 <strong>A GPU-accelerated terminal built for agentic coding.</strong><br>
-<strong>macOS, Linux, and Windows. Native splits, tabs, and multi-window. Built-in git with diff view, staging, worktrees, and push/pull.</strong><br>
-<strong>Real-time notifications when your agents need you. Activity pulses so you always know what's running.</strong><br><br>
+<strong>Real-time notifications when your agents need you. Activity pulses so you always know what's running.</strong><br>
+<strong>macOS, Linux, and Windows. Native splits, tabs, and multi-window. Built-in git with diff view, staging, worktrees, and push/pull.</strong><br><br>
 <a href="https://orcashell.com">orcashell.com</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="LICENSE-MIT">MIT / Apache-2.0</a>
 </p>
 
@@ -23,6 +23,32 @@ A professional, full-featured terminal built from the ground up for working alon
 I built it because I wanted a terminal that was genuinely good at agentic workflows, but also a top-of-the-line terminal I'd want to use for everything else too. Splits that remember where they were, worktrees that spin up in one click, diffs you can review and stage without switching apps, and notifications the second an agent needs attention.
 
 It's written entirely in Rust on top of GPUI (the same GPU framework that powers the Zed editor). Every pixel is GPU-rendered. The terminal emulator is a customized fork of alacritty_terminal. State persists to SQLite so nothing is lost on restart. And it looks like nothing else.
+
+## Download
+
+**[Download from orcashell.com](https://orcashell.com)** for the easiest install experience.
+
+Or use the command line:
+
+**macOS (Apple Silicon)**
+```bash
+curl -LO https://github.com/bhensley5/orcashell/releases/latest/download/OrcaShell-macos-arm64.dmg
+open OrcaShell-macos-arm64.dmg
+```
+
+**Linux (x86_64)**
+```bash
+curl -LO https://github.com/bhensley5/orcashell/releases/latest/download/orcashell-linux-x86_64.tar.gz
+tar xzf orcashell-linux-x86_64.tar.gz
+```
+
+**Windows (x64)**
+```powershell
+irm https://github.com/bhensley5/orcashell/releases/latest/download/orcashell-windows-x64.zip -OutFile orcashell-windows-x64.zip
+Expand-Archive orcashell-windows-x64.zip
+```
+
+All releases are also available on [GitHub Releases](https://github.com/bhensley5/orcashell/releases).
 
 ## Highlights
 
